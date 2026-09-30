@@ -95,25 +95,28 @@ pub mod basic_word {
 
     /// Compute the Hamming distance between two Words
     fn dist(w1: &Word, w2: &Word) -> isize {
-        let mut count = 0;
-        let maxlen = std::cmp::max(w1.0[0], w2.0[0]) as usize;
-        for index in 1..=maxlen{
-            if w1.0[index] != w2.0[index]{
-                count += 1;
-            }
+        // Compare every character slot. The unused positions are zero-padded,
+        // so a fixed-size loop still handles words of different lengths while
+        // giving the compiler a better opportunity to vectorize the loop.
+        let mut count = 0u8;
+        for index in 1..WSIZE {
+            count += u8::from(w1.0[index] != w2.0[index]);
         }
-        count
+        count as isize
     }
-// let mut count = 0;
-//         let len1 = w1.0[0] as usize;
-//         let len2 = w2.0[0] as usize;
-//         let min_len = std::cmp::min(len1, len2);
-//         for index in 1..=min_len{
-//             if w1.0[index] != w2.0[index]{
-//                 count += 1;
-//             }
-//         }
-//         count + (len1 as isize - len2 as isize).abs()
+
+    // Previous length-aware version (correct, but slower in benchmarking):
+    // fn dist(w1: &Word, w2: &Word) -> isize {
+    //     let mut count = 0;
+    //     let maxlen = std::cmp::max(w1.0[0], w2.0[0]) as usize;
+    //     for index in 1..=maxlen {
+    //         if w1.0[index] != w2.0[index] {
+    //             count += 1;
+    //         }
+    //     }
+    //     count
+    // }
+
     /// Compute vector of mean distances for all words (pre-packed)
     pub fn mean_dists(dict: &[Word]) -> Vec<f64> {
         let mut result = Vec::new();

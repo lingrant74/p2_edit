@@ -43,9 +43,11 @@ pub mod block_str {
     fn block_updates(d1: &[String], d2: &[String], counts: &mut [isize]) {
         let mut index = 0;
         for d1Ele in d1{
+            let mut subtotal = 0;
             for d2Ele in d2{
-                counts[index] += dist(d1Ele,d2Ele);
+                subtotal += dist(d1Ele,d2Ele);
             }
+            counts[index] += subtotal;
             index += 1;
         }
     }

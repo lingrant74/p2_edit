@@ -36,7 +36,7 @@ pub mod basic_str {
 pub mod block_str {
 
     use super::basic_str::dist; // We can use the naive string compare
-    const BSIZE: usize = 500; // Probably want a constant block size param
+    const BSIZE: usize = 256; // Probably want a constant block size param
 
     /// Compute vector of mean distances for all strings (you may change
     /// the interface if you want)

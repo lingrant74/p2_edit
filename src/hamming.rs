@@ -151,14 +151,24 @@ pub mod swar_word {
             for (i,c) in s.bytes().enumerate(){
                 let value = (c - b'a' + 1) as u64;
 
-                let chunk = i / 12;
-                let offset = i % 12;
-                let shift = offset * 5;
+                let chunk = i / 10;
+                let offset = i % 10;
+                let shift = offset * 6;
                 
                 word.0[chunk] |= value << shift;
             }
             word
         }
+    }
+
+    #[inline(always)]
+    fn count_differences(diff: u64) -> isize {
+        const ADD_MASK: u64 =
+            0b011111_011111_011111_011111_011111_011111_011111_011111_011111_011111;
+        const HIGH_BITS: u64 =
+            0b100000_100000_100000_100000_100000_100000_100000_100000_100000_100000;
+
+        ((((diff + ADD_MASK) & HIGH_BITS) >> 5) % 63) as isize
     }
 
     /// Compute the Hamming distance between two Words
@@ -179,24 +189,22 @@ pub mod swar_word {
         //     }
         // }
         // count
-        let mut count = 0;
+        // Previous five-bit version:
+        // let mut count = 0;
+        // for i in 0..3 {
+        //     let diff = w1.0[i] ^ w2.0[i];
+        //     let mut collapsed = diff;
+        //     for shift in 1..5 {
+        //         collapsed |= diff >> shift;
+        //     }
+        //     let mask = 0x84210842108421u64;
+        //     count += (collapsed & mask).count_ones() as isize;
+        // }
+        // count
 
-        for i in 0..3 {
-            let diff = w1.0[i] ^ w2.0[i];
-
-            let mut collapsed = diff;
-
-            for shift in 1..5 {
-                collapsed |= diff >> shift;
-            }
-
-            let mask = 0x84210842108421u64;
-
-            count += (collapsed & mask).count_ones() as isize;
-        }
-
-        count
-        
+        count_differences(w1.0[0] ^ w2.0[0])
+            + count_differences(w1.0[1] ^ w2.0[1])
+            + count_differences(w1.0[2] ^ w2.0[2])
     }
 
     /// Compute vector of mean distances for all words (pre-packed)

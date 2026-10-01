@@ -105,7 +105,7 @@ pub mod basic_word {
         count as isize
     }
 
-    // Previous length-aware version (correct, but slower in benchmarking):
+    // Previous length-aware version:
     // fn dist(w1: &Word, w2: &Word) -> isize {
     //     let mut count = 0;
     //     let maxlen = std::cmp::max(w1.0[0], w2.0[0]) as usize;
@@ -172,7 +172,7 @@ pub mod swar_word {
     }
 
     /// Compute the Hamming distance between two Words
-    fn dist(w1: &Word, w2: &Word) -> isize {
+    pub(super) fn dist(w1: &Word, w2: &Word) -> isize {
         // let diff1 = w1.0[0] ^ w2.0[0];
         // let diff2 = w1.0[1] ^ w2.0[1];
         // let diff3 = w1.0[2] ^ w2.0[2];
@@ -225,7 +225,7 @@ pub mod swar_word {
     }
 
     /// Re-pack the dictionary in more condensed form
-    fn pack_dict(dict: &[String]) -> Vec<Word> {
+    pub(super) fn pack_dict(dict: &[String]) -> Vec<Word> {
         dict.iter().map(|s| Word::new(s)).collect()
     }
 
@@ -239,7 +239,28 @@ pub mod swar_word {
 pub mod optimized {
 
     pub fn mean_dists_dict(dict: &[String]) -> Vec<f64> {
-        super::swar_word::mean_dists_dict(dict)
+        use super::swar_word::{dist, pack_dict};
+
+        let words = pack_dict(dict);
+        let size = words.len();
+        let mut counts = vec![0isize; size];
+
+        for i in 0..size {
+            let mut subtotal = 0;
+
+            for j in (i + 1)..size {
+                let distance = dist(&words[i], &words[j]);
+                subtotal += distance;
+                counts[j] += distance;
+            }
+
+            counts[i] += subtotal;
+        }
+
+        counts
+            .iter()
+            .map(|count| *count as f64 / size as f64)
+            .collect()
     }
 }
 

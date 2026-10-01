@@ -231,7 +231,7 @@ pub mod swar_word {
 pub mod optimized {
 
     pub fn mean_dists_dict(dict: &[String]) -> Vec<f64> {
-        todo!()
+        super::swar_word::mean_dists_dict(dict)
     }
 }
 
@@ -246,5 +246,22 @@ mod test {
         assert_eq!(dist("test", "tilt"), 2);
     }
 
-    // TODO: Add your own module tests!
+    #[test]
+    fn test_all_versions_match_naive() {
+        use super::{basic_str, basic_word, block_str, optimized, swar_word};
+
+        let dict = vec![
+            "cat".to_string(),
+            "cut".to_string(),
+            "cats".to_string(),
+            "dog".to_string(),
+        ];
+
+        let expected = basic_str::mean_dists_dict(&dict);
+
+        assert_eq!(block_str::mean_dists_dict(&dict), expected);
+        assert_eq!(basic_word::mean_dists_dict(&dict), expected);
+        assert_eq!(swar_word::mean_dists_dict(&dict), expected);
+        assert_eq!(optimized::mean_dists_dict(&dict), expected);
+    }
 }
